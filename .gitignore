@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual env
+.venv/
+venv/
+
+# Runtime data
+/data/*.db
+/data/*.sqlite
+/data/plugin_data/*
+/logs/*.log
+/logs/*.log.*
+
+# Local config
+config/buddy.yaml
+config/plugins/*.yaml
+config/safe_mode.flag
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/

@@ -1,0 +1,4 @@
+enabled: true
+settings:
+  theme: retro_terminal
+  accent: cyan

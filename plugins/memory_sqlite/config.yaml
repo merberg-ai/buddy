@@ -1,0 +1,3 @@
+enabled: true
+settings:
+  durable_memory_requires_confirmation: true

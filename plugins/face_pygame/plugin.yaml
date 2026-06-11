@@ -1,0 +1,14 @@
+id: face_pygame
+name: Pygame Face Display
+version: 0.1.0
+type: face
+description: Stub for fullscreen HDMI Pygame face display.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - face.control
+api:
+  prefix: /api/plugins/face_pygame

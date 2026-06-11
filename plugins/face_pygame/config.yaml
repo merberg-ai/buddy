@@ -1,0 +1,7 @@
+enabled: false
+settings:
+  fullscreen: true
+  width: 1024
+  height: 600
+  fps: 30
+  theme: neon_dark

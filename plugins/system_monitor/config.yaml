@@ -1,0 +1,3 @@
+enabled: true
+settings:
+  include_temperature: true

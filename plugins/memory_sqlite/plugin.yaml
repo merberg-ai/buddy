@@ -1,0 +1,15 @@
+id: memory_sqlite
+name: SQLite Memory
+version: 0.1.0
+type: memory
+description: SQLite-backed starter memory and event database plugin.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: true
+permissions:
+  - api
+  - events
+  - memory.read
+  - memory.write
+api:
+  prefix: /api/plugins/memory_sqlite

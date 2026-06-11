@@ -1,0 +1,15 @@
+id: emotion_engine
+name: Emotion Engine
+version: 0.1.0
+type: emotion
+description: Stub for Buddy mood and emotional state engine.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - memory.write
+  - face.control
+api:
+  prefix: /api/plugins/emotion_engine

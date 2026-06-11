@@ -1,0 +1,29 @@
+system:
+  name: Buddy
+  version: 0.1.0-framework
+  host: 0.0.0.0
+  port: 8080
+  safe_mode: false
+
+paths:
+  data_dir: data
+  log_dir: logs
+  plugin_dir: plugins
+  config_dir: config
+
+logging:
+  level: INFO
+  max_file_mb: 10
+  backup_count: 10
+  live_console_enabled: true
+  sqlite_event_log_enabled: true
+
+plugins:
+  auto_discover: true
+  auto_disable_repeated_failures: true
+  max_errors: 5
+  error_window_seconds: 300
+
+webui:
+  theme: retro_terminal
+  console_max_lines: 500

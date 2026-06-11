@@ -1,0 +1,299 @@
+Buddy v1.0 Project Roadmap
+==========================
+
+Project summary
+---------------
+Buddy is a Raspberry Pi 5 desktop AI buddy designed for Raspberry Pi OS Lite. It should use a modular plugin-first architecture where major capabilities can be added, removed, tested, enabled, disabled, installed from ZIP, or installed from GitHub.
+
+Design pillars
+--------------
+1. Plugin-first architecture
+2. Pygame face display instead of browser kiosk
+3. Retro-terminal WebUI dashboard
+4. Live web console on dashboard
+5. Heavy structured logging
+6. SQLite-backed memory and event history
+7. Graceful failure handling
+8. One broken plugin must not crash BuddyCore
+9. Installable as an app or systemd service
+10. Friendly install scripts with clear, verbose output
+
+Core responsibilities
+---------------------
+BuddyCore should provide only the stable nervous system:
+
+- FastAPI app shell
+- WebUI shell
+- Live console stream
+- SQLite bootstrap
+- Event bus
+- Plugin discovery/loading
+- Plugin manager WebUI/API
+- Plugin permissions metadata
+- Plugin config storage
+- Plugin health/status/error tracking
+- Logging infrastructure
+- Safe-mode recovery
+- Backup/debug bundle foundation
+
+Plugins should provide features:
+
+- Face display
+- Emotion engine
+- Voice pipeline
+- Wake word
+- Speech-to-text
+- Text-to-speech
+- Brain providers
+- Vision/camera
+- YOLO recognition/tracking
+- Face recognition
+- Servo/motion control
+- Head tracking learning
+- Memory summarization
+- Integrations
+- Log viewer
+- System monitor
+
+Milestone v0.1 - Framework Skeleton
+-----------------------------------
+Goal: runnable repo foundation.
+
+Included:
+- GitHub-ready repo structure
+- README.md
+- roadmap.txt
+- requirements.txt
+- FastAPI app
+- Retro terminal dashboard
+- Live WebSocket console
+- Rotating file logging
+- SQLite schema bootstrap
+- Plugin manager
+- Plugin manifests
+- Plugin enable/disable/rescan/reload
+- Plugin install from ZIP
+- Plugin install from GitHub repo
+- Default starter plugins
+- Verbose install script
+- Run script
+- systemd install/uninstall scripts
+
+Definition of done:
+- App runs with ./scripts/run.sh
+- WebUI opens on :8080
+- Live console streams logs
+- Plugins are listed
+- Plugins can be enabled/disabled
+- Bad plugin failure is logged and isolated
+- SQLite DB is created automatically
+- Service can be installed/uninstalled
+
+Milestone v0.2 - Plugin Management Polish
+-----------------------------------------
+Goal: make plugins pleasant and safe to manage.
+
+Planned:
+- Full plugin detail pages
+- Permission review screen
+- Dependency detection
+- Dependency install helper for Python packages
+- GitHub update checks
+- ZIP plugin updates
+- Rollback previous plugin version
+- Plugin config schema rendering
+- Per-plugin log viewer
+- Plugin event timeline
+- Auto-disable repeated plugin crashes
+- Safe-mode WebUI recovery flow
+
+Milestone v0.3 - Pygame Face Plugin
+-----------------------------------
+Goal: HDMI face display that runs cleanly on Pi OS Lite.
+
+Planned:
+- Fullscreen Pygame app
+- Mood expressions
+- Blinking
+- Speaking animation
+- Idle animations
+- Theme packs
+- Touch support hooks
+- Debug overlay
+- WebUI face designer foundation
+- Face reacts to emotion.changed and tts events
+
+Milestone v0.4 - Memory System
+------------------------------
+Goal: make memory first-class.
+
+Planned:
+- Conversation logging
+- Durable memories
+- Memory browser
+- Memory edit/delete
+- Memory import/export
+- Memory importance scoring
+- Conversation summaries
+- User confirmation before durable memory promotion
+- Plugin memory namespaces
+- Embeddings later through Ollama/OpenAI
+
+Milestone v0.5 - Voice Pipeline
+-------------------------------
+Goal: Buddy can listen and respond.
+
+Planned plugins:
+- wakeword_openwakeword
+- stt_whispercpp
+- stt_openai
+- tts_piper
+- voice_pipeline coordinator
+
+Features:
+- Mic/speaker setup
+- Wake word detection
+- Voice activity detection
+- Record utterance
+- Transcribe
+- Send to brain provider
+- Speak via Piper
+- Log full event chain
+
+Milestone v0.6 - Brain Providers
+--------------------------------
+Goal: support local and cloud brains.
+
+Planned:
+- brain_ollama plugin
+- brain_openai plugin
+- hybrid router
+- fallback rules
+- model health checks
+- prompt context from memory/emotion
+- tool-call style plugin actions
+
+Milestone v0.7 - Vision
+-----------------------
+Goal: Buddy can see.
+
+Planned plugins:
+- vision_camera
+- vision_yolo
+- face_recognition
+
+Features:
+- USB camera support
+- Pi camera support
+- Camera preview endpoint
+- YOLO object detection
+- Person/face detection
+- Face enrollment with explicit confirmation
+- Known/unknown person events
+- Vision logs
+
+Milestone v0.8 - Emotion Engine
+-------------------------------
+Goal: Buddy has a configurable mood system.
+
+Planned:
+- emotion state values
+- mood selector
+- loneliness/happiness/annoyance/curiosity/energy
+- environmental baselines
+- social presence
+- noise annoyance
+- too-many-questions grumpiness
+- mood explanations
+- mood feedback
+- quiet hours
+- personality profiles
+
+Milestone v0.9 - Motion and Head Tracking
+-----------------------------------------
+Goal: Buddy can move safely.
+
+Planned plugins:
+- motion_pca9685
+- head_tracker
+
+Features:
+- Servo channel assignment
+- Min/max/center calibration
+- Arm/disarm
+- Emergency stop
+- Gesture presets
+- Object/face tracking
+- Camera-servo calibration
+- Learned pixels-per-degree model
+- Tracking observation logs
+- Hard safety limits
+
+Milestone v1.0 - First Real Buddy Release
+-----------------------------------------
+Goal: a stable hobbyist release.
+
+Target features:
+- Pi OS Lite friendly install
+- App mode and system service mode
+- Plugin-first architecture
+- Pygame face display
+- WebUI terminal dashboard
+- Live console
+- Log viewer plugin
+- SQLite memory
+- Emotion engine plugin
+- Voice pipeline plugins
+- Ollama/OpenAI brain plugins
+- Piper TTS plugin
+- Camera/YOLO plugins
+- Optional face recognition
+- Optional servo/motion/head tracking
+- Plugin install from ZIP/GitHub
+- Safe mode
+- Debug bundle export
+- Noob-friendly documentation
+
+Default enabled plugin goal
+---------------------------
+Enabled by default:
+- dashboard_terminal
+- log_viewer
+- system_monitor
+- config_manager
+- memory_sqlite
+- face_pygame, when configured
+- emotion_engine
+- idle_behavior
+
+Installed but disabled/needing setup:
+- wakeword_openwakeword
+- stt_whispercpp
+- stt_openai
+- tts_piper
+- brain_ollama
+- brain_openai
+- vision_camera
+- vision_yolo
+- face_recognition
+- motion_pca9685
+- head_tracker
+- plugin_dev_tools
+
+Long-term ideas
+---------------
+- Plugin marketplace/index
+- Signed plugins
+- Plugin sandboxing
+- Separate-process plugins
+- Mobile-friendly setup wizard
+- OTA-ish update system
+- Backup/restore UI
+- Personality packs
+- Face packs
+- Gesture packs
+- cc2-dash integration
+- Tasmota/Home Assistant integration
+- MQTT support
+- Debug capture sessions
+- Timeline replay: why Buddy did something

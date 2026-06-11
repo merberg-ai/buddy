@@ -1,0 +1,13 @@
+id: log_viewer
+name: Log Viewer
+version: 0.1.0
+type: utility
+description: Log and event viewer foundation for Buddy's dashboard.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: true
+permissions:
+  - api
+  - events
+api:
+  prefix: /api/plugins/log_viewer

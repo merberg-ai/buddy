@@ -1,0 +1,14 @@
+id: dashboard_terminal
+name: Dashboard Terminal
+version: 0.1.0
+type: ui
+description: Retro-terminal dashboard metadata and UI health hooks.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: true
+permissions:
+  - api
+  - events
+  - webui
+api:
+  prefix: /api/plugins/dashboard_terminal

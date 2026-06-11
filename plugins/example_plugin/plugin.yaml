@@ -1,0 +1,14 @@
+id: example_plugin
+name: Example Plugin
+version: 0.1.0
+type: utility
+description: Minimal example plugin showing API routes and events.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - face.control
+api:
+  prefix: /api/plugins/example_plugin

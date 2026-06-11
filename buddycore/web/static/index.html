@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BuddyCore Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="scanlines"></div>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Raspberry Pi Desktop AI Buddy</div>
+      <h1>BuddyCore <span id="version">v0.1</span></h1>
+    </div>
+    <div class="status-pill" id="connectionStatus">CONNECTING</div>
+  </header>
+
+  <main class="grid">
+    <section class="card hero-card">
+      <div class="card-title">System</div>
+      <div class="metric-row">
+        <div><span class="label">Name</span><strong id="buddyName">Buddy</strong></div>
+        <div><span class="label">Safe Mode</span><strong id="safeMode">?</strong></div>
+        <div><span class="label">Plugins</span><strong id="pluginSummary">?</strong></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-title">Plugin Controls</div>
+      <div class="button-row">
+        <button id="rescanBtn">🔍 Rescan</button>
+        <button id="refreshBtn">🔄 Refresh</button>
+      </div>
+      <form id="githubInstallForm" class="install-form">
+        <label>Install from GitHub</label>
+        <input id="githubRepo" placeholder="https://github.com/user/buddy-plugin.git" />
+        <div class="form-row">
+          <input id="githubBranch" placeholder="branch" value="main" />
+          <input id="githubSubdir" placeholder="subdir optional" />
+        </div>
+        <button type="submit">⬇️ Install Repo</button>
+      </form>
+      <form id="zipInstallForm" class="install-form">
+        <label>Install from ZIP</label>
+        <input id="zipFile" type="file" accept=".zip" />
+        <button type="submit">📦 Install ZIP</button>
+      </form>
+    </section>
+
+    <section class="card plugins-card">
+      <div class="card-title">Installed Plugins</div>
+      <div id="plugins" class="plugins-list"></div>
+    </section>
+
+    <section class="card console-card">
+      <div class="console-header">
+        <div>
+          <div class="card-title">Live Console</div>
+          <div class="subtle">Logs + events stream here. The robot's nervous system, but readable.</div>
+        </div>
+        <div class="button-row">
+          <select id="levelFilter">
+            <option value="">All</option>
+            <option>EVENT</option>
+            <option>INFO</option>
+            <option>WARN</option>
+            <option>ERROR</option>
+            <option>DEBUG</option>
+          </select>
+          <button id="pauseConsole">⏸ Pause</button>
+          <button id="clearConsole">🧹 Clear</button>
+        </div>
+      </div>
+      <pre id="console"></pre>
+    </section>
+  </main>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

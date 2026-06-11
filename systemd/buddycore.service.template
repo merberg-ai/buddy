@@ -1,0 +1,21 @@
+[Unit]
+Description=BuddyCore Raspberry Pi Desktop AI Buddy
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__BUDDY_USER__
+WorkingDirectory=__BUDDY_ROOT__
+Environment=BUDDY_HOST=0.0.0.0
+Environment=BUDDY_PORT=8080
+ExecStart=__BUDDY_ROOT__/.venv/bin/python -m buddycore
+Restart=on-failure
+RestartSec=4
+TimeoutStopSec=20
+
+# Keep this conservative. Hardware plugins can add their own permissions later.
+NoNewPrivileges=false
+
+[Install]
+WantedBy=multi-user.target
