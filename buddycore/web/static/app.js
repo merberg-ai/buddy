@@ -2,9 +2,24 @@ const state = {
   paused: false,
   levelFilter: "",
   selectedPlugin: "",
+  browserMode: "desktop",
 };
 
 const el = (id) => document.getElementById(id);
+
+function detectBrowserMode() {
+  const coarse = window.matchMedia("(pointer: coarse)").matches;
+  const narrow = window.matchMedia("(max-width: 760px)").matches;
+  const shortViewport = window.matchMedia("(max-height: 520px)").matches;
+  const uaMobile = /Android|iPhone|iPad|iPod|Mobile|Windows Phone/i.test(navigator.userAgent);
+  const mobile = uaMobile || (coarse && narrow);
+  state.browserMode = mobile ? "mobile" : "desktop";
+  document.documentElement.dataset.browserMode = state.browserMode;
+  document.body.classList.toggle("is-mobile", mobile);
+  document.body.classList.toggle("is-desktop", !mobile);
+  document.body.classList.toggle("is-touch", coarse);
+  document.body.classList.toggle("is-compact", narrow || shortViewport);
+}
 
 function h(value) {
   return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
@@ -204,6 +219,9 @@ function connectConsole() {
 }
 
 async function init() {
+  detectBrowserMode();
+  window.addEventListener('resize', detectBrowserMode);
+  window.addEventListener('orientationchange', detectBrowserMode);
   el('refreshBtn').addEventListener('click', async () => { await loadStatus(); await loadPlugins(); });
   el('enableSafeModeBtn').addEventListener('click', async () => setSafeMode(true));
   el('disableSafeModeBtn').addEventListener('click', async () => setSafeMode(false));
