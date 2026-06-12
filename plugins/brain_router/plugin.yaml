@@ -1,0 +1,14 @@
+id: brain_router
+name: Hybrid Brain Router
+version: 0.1.0
+type: brain
+description: Hybrid routing foundation for local/cloud brain providers and fallback rules.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - brain.call
+api:
+  prefix: /api/plugins/brain_router

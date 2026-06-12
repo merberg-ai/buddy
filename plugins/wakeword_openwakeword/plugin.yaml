@@ -1,0 +1,19 @@
+id: wakeword_openwakeword
+name: OpenWakeWord Wake Word
+version: 0.1.0
+type: voice
+description: Wake word detector foundation using OpenWakeWord when configured.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - voice.listen
+dependencies:
+  python:
+    - package: openwakeword
+      module: openwakeword
+      optional: true
+api:
+  prefix: /api/plugins/wakeword_openwakeword

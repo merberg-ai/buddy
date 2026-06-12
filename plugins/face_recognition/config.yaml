@@ -1,0 +1,4 @@
+settings:
+  enabled: false
+  require_confirmation_for_enrollment: true
+  source_plugin: vision_camera

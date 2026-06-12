@@ -1,0 +1,6 @@
+settings:
+  enabled: false
+  wakeword_plugin: wakeword_openwakeword
+  stt_plugin: stt_whispercpp
+  brain_plugin: brain_router
+  tts_plugin: tts_piper

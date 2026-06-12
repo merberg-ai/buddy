@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  executable: whisper-cli
+  model_path: ""
+  language: en

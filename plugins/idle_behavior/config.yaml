@@ -1,0 +1,4 @@
+settings:
+  enabled: true
+  default_idle_mood: calm
+  idle_message: Buddy is idling.

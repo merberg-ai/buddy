@@ -5,3 +5,5 @@ settings:
   height: 600
   fps: 30
   theme: neon_dark
+  debug_overlay: false
+  start_renderer: false

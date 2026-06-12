@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  model: gpt-4.1-mini
+  api_key_env: OPENAI_API_KEY
+  timeout_seconds: 60

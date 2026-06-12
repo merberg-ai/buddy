@@ -1,0 +1,14 @@
+id: idle_behavior
+name: Idle Behavior
+version: 0.1.0
+type: behavior
+description: Emits gentle idle presence events for face, emotion, and future motion plugins.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: true
+permissions:
+  - api
+  - events
+  - face.control
+api:
+  prefix: /api/plugins/idle_behavior

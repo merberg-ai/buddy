@@ -1,0 +1,20 @@
+id: motion_pca9685
+name: PCA9685 Motion
+version: 0.1.0
+type: motion
+description: Servo motion, calibration, arming, and emergency-stop foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - motion.control
+  - motion.calibrate
+dependencies:
+  python:
+    - package: adafruit-circuitpython-pca9685
+      module: adafruit_pca9685
+      optional: true
+api:
+  prefix: /api/plugins/motion_pca9685

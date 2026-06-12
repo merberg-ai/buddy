@@ -58,6 +58,16 @@ async function loadStatus() {
   el('pluginSummary').textContent = `${data.plugins.running}/${data.plugins.enabled} running (${data.plugins.total} installed)`;
 }
 
+async function setSafeMode(enabled) {
+  const data = await fetchJson('/api/safe-mode', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({enabled})
+  });
+  addConsoleLine({level: data.ok ? 'WARN' : 'ERROR', source: 'webui', message: data.message || JSON.stringify(data)});
+  await loadStatus();
+}
+
 async function loadPlugins() {
   const data = await fetchJson('/api/plugins');
   const box = el('plugins');
@@ -195,6 +205,8 @@ function connectConsole() {
 
 async function init() {
   el('refreshBtn').addEventListener('click', async () => { await loadStatus(); await loadPlugins(); });
+  el('enableSafeModeBtn').addEventListener('click', async () => setSafeMode(true));
+  el('disableSafeModeBtn').addEventListener('click', async () => setSafeMode(false));
   el('rescanBtn').addEventListener('click', async () => {
     const data = await fetchJson('/api/plugins/rescan', {method: 'POST'});
     addConsoleLine({level: 'INFO', source: 'webui', message: `Rescan complete: ${JSON.stringify(data.discovered)}`});

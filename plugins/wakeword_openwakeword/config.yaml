@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  model: hey_buddy
+  audio_device: default
+  threshold: 0.5

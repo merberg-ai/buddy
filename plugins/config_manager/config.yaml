@@ -1,0 +1,3 @@
+settings:
+  allow_core_config_write: false
+  redact_sensitive_values: true

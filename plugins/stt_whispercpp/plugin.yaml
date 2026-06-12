@@ -1,0 +1,14 @@
+id: stt_whispercpp
+name: Whisper.cpp STT
+version: 0.1.0
+type: voice
+description: Local speech-to-text foundation for whisper.cpp.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - voice.listen
+api:
+  prefix: /api/plugins/stt_whispercpp

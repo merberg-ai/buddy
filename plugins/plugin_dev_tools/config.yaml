@@ -1,0 +1,3 @@
+settings:
+  enabled: false
+  allow_scaffold_write: false

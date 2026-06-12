@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  model: yolov8n.pt
+  confidence: 0.45
+  source_plugin: vision_camera

@@ -26,10 +26,10 @@ This repository is the **initial GitHub-ready framework**: repo layout, install 
 - Install plugins from ZIP
 - Install plugins from GitHub repo
 - Debug bundle export with redacted config, logs, events, and plugin state
-- Default bundled plugin stubs
+- Roadmap plugin foundations for face, memory, voice, brain, vision, emotion, motion, and developer tools
 - Verbose colorized install scripts
 - Run as a normal app or install as a systemd service
-- Safe-mode flag support via `config/safe_mode.flag`
+- Safe-mode flag and WebUI/API recovery controls
 
 ---
 
@@ -229,7 +229,7 @@ Installed plugins are validated, copied into `plugins/`, registered, and left di
 
 ---
 
-## Bundled starter plugins
+## Bundled plugins
 
 The framework ships with these plugin folders:
 
@@ -238,12 +238,28 @@ The framework ships with these plugin folders:
 | `dashboard_terminal` | enabled | Dashboard metadata and UI status |
 | `log_viewer` | enabled | Log/event viewer API foundation |
 | `system_monitor` | enabled | CPU/RAM/disk/temperature status |
-| `memory_sqlite` | enabled | Memory DB status and starter memory API |
+| `config_manager` | enabled | Core/plugin config inspection foundation |
+| `memory_sqlite` | enabled | Memory CRUD, import/export, and stats API |
+| `emotion_engine` | enabled | Mood state, feedback, and emotion events |
+| `idle_behavior` | enabled | Idle presence events and face mood nudges |
 | `example_plugin` | disabled | Minimal example plugin |
-| `face_pygame` | disabled | Stub for future HDMI face display |
-| `emotion_engine` | disabled | Stub for future mood engine |
+| `face_pygame` | disabled | HDMI face display state and renderer readiness foundation |
+| `wakeword_openwakeword` | disabled | Wake word setup foundation |
+| `stt_whispercpp` | disabled | Local STT adapter foundation |
+| `stt_openai` | disabled | Cloud STT adapter foundation |
+| `tts_piper` | disabled | Piper TTS adapter foundation |
+| `voice_pipeline` | disabled | Wake word/STT/brain/TTS coordinator foundation |
+| `brain_ollama` | disabled | Ollama brain provider foundation |
+| `brain_openai` | disabled | OpenAI brain provider foundation |
+| `brain_router` | disabled | Hybrid brain routing foundation |
+| `vision_camera` | disabled | Camera preview/capture foundation |
+| `vision_yolo` | disabled | YOLO detection foundation |
+| `face_recognition` | disabled | Known/unknown person recognition foundation |
+| `motion_pca9685` | disabled | Servo motion and calibration foundation |
+| `head_tracker` | disabled | Vision-to-motion tracking foundation |
+| `plugin_dev_tools` | disabled | Plugin authoring and diagnostics foundation |
 
-More plugins are planned in `roadmap.txt`.
+Hardware, voice, cloud, and motion plugins stay disabled until their dependencies and physical devices are configured.
 
 ---
 
@@ -324,7 +340,7 @@ Remove it:
 rm -f config/safe_mode.flag
 ```
 
-Safe-mode behavior is partially scaffolded and will be expanded as the plugin system matures.
+Safe mode can also be toggled from the dashboard. A restart is required after changing the flag; safe mode boots only the recovery-friendly plugins.
 
 ---
 

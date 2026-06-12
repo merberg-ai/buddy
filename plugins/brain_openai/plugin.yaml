@@ -1,0 +1,20 @@
+id: brain_openai
+name: OpenAI Brain
+version: 0.1.0
+type: brain
+description: OpenAI brain provider foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - brain.call
+  - network
+dependencies:
+  python:
+    - package: openai
+      module: openai
+      optional: true
+api:
+  prefix: /api/plugins/brain_openai

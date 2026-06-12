@@ -1,0 +1,15 @@
+id: head_tracker
+name: Head Tracker
+version: 0.1.0
+type: motion
+description: Face/object tracking and camera-servo calibration foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - vision.read
+  - motion.control
+api:
+  prefix: /api/plugins/head_tracker

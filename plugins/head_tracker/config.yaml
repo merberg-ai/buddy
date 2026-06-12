@@ -1,0 +1,6 @@
+settings:
+  enabled: false
+  vision_plugin: vision_yolo
+  motion_plugin: motion_pca9685
+  tracking_mode: face
+  pixels_per_degree_model: null

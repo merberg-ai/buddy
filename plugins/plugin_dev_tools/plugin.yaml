@@ -1,0 +1,14 @@
+id: plugin_dev_tools
+name: Plugin Dev Tools
+version: 0.1.0
+type: developer
+description: Plugin scaffolding, manifest inspection, and developer diagnostics foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - filesystem.write
+api:
+  prefix: /api/plugins/plugin_dev_tools

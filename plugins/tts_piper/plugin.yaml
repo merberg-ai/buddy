@@ -1,0 +1,14 @@
+id: tts_piper
+name: Piper TTS
+version: 0.1.0
+type: voice
+description: Local Piper text-to-speech adapter foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - voice.speak
+api:
+  prefix: /api/plugins/tts_piper

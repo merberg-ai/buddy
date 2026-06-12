@@ -1,0 +1,20 @@
+id: stt_openai
+name: OpenAI STT
+version: 0.1.0
+type: voice
+description: Cloud speech-to-text adapter foundation for OpenAI audio transcription.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - voice.listen
+  - network
+dependencies:
+  python:
+    - package: openai
+      module: openai
+      optional: true
+api:
+  prefix: /api/plugins/stt_openai

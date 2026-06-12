@@ -1,0 +1,4 @@
+settings:
+  enabled: false
+  model: gpt-4o-mini-transcribe
+  api_key_env: OPENAI_API_KEY

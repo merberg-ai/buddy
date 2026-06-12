@@ -1,0 +1,8 @@
+settings:
+  enabled: false
+  armed: false
+  i2c_address: "0x40"
+  channels: {}
+  safety:
+    hard_limits_enabled: true
+    emergency_stop_on_start: true

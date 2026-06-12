@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  primary: brain_ollama
+  fallback: brain_openai
+  fallback_on_error: true

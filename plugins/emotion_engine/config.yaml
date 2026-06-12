@@ -1,5 +1,10 @@
-enabled: false
+enabled: true
 settings:
   default_mood: neutral
   allow_grumpy_mode: true
   sass_level: 0.5
+  quiet_hours:
+    enabled: false
+    start: "22:00"
+    end: "07:00"
+  personality_profile: friendly

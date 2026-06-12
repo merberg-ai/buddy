@@ -1,0 +1,20 @@
+id: face_recognition
+name: Face Recognition
+version: 0.1.0
+type: vision
+description: Known/unknown person recognition and enrollment foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - person.recognition
+  - vision.read
+dependencies:
+  python:
+    - package: face-recognition
+      module: face_recognition
+      optional: true
+api:
+  prefix: /api/plugins/face_recognition

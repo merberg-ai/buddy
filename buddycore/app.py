@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from . import __version__
-from .config import ROOT_DIR, load_config, path_from_config
+from .config import CONFIG_DIR, ROOT_DIR, load_config, path_from_config
 from .console import ConsoleHub
 from .database import BuddyDatabase
 from .debug_bundle import create_debug_bundle
@@ -31,6 +31,10 @@ class GitHubInstallRequest(BaseModel):
 class PermissionUpdateRequest(BaseModel):
     permission: str
     granted: bool
+
+
+class SafeModeRequest(BaseModel):
+    enabled: bool
 
 
 def create_app() -> FastAPI:
@@ -58,7 +62,7 @@ def create_app() -> FastAPI:
     db.log_event("INFO", "core", "BuddyCore database initialized", event_type="system.database_ready")
 
     event_bus = EventBus(db, console)
-    plugin_manager = PluginManager(plugin_dir, config_dir, data_dir, db, event_bus, console)
+    plugin_manager = PluginManager(plugin_dir, config_dir, data_dir, db, event_bus, console, config.get("plugins", {}))
 
     app = FastAPI(title="BuddyCore", version=__version__)
     app.state.config = config
@@ -151,6 +155,25 @@ def create_app() -> FastAPI:
             "path": str(bundle_path),
             "download_url": f"/api/debug-bundle/{bundle_path.name}",
         }
+
+    @app.post("/api/safe-mode")
+    async def set_safe_mode(payload: SafeModeRequest):
+        safe_flag = CONFIG_DIR / "safe_mode.flag"
+        if payload.enabled:
+            safe_flag.write_text("safe mode enabled\n", encoding="utf-8")
+            message = "Safe mode flag created. Restart BuddyCore to boot with only recovery plugins."
+        else:
+            if safe_flag.exists():
+                safe_flag.unlink()
+            message = "Safe mode flag removed. Restart BuddyCore to load normal enabled plugins."
+        logger.warning(message)
+        await console.publish({
+            "kind": "system",
+            "level": "WARN",
+            "source": "core",
+            "message": message,
+        })
+        return {"ok": True, "safe_mode": payload.enabled, "message": message}
 
     @app.get("/api/debug-bundle/{filename}")
     async def download_debug_bundle(filename: str):

@@ -1,0 +1,5 @@
+settings:
+  enabled: false
+  executable: piper
+  voice_model: ""
+  output_device: default

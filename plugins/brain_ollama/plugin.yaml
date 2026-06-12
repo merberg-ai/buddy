@@ -1,0 +1,19 @@
+id: brain_ollama
+name: Ollama Brain
+version: 0.1.0
+type: brain
+description: Local/LAN Ollama brain provider foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - brain.call
+  - network
+dependencies:
+  python:
+    - package: requests
+      module: requests
+api:
+  prefix: /api/plugins/brain_ollama

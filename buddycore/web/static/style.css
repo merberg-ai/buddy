@@ -198,6 +198,8 @@ input { width: 100%; }
   gap: 0.85rem;
 }
 
+.system-actions { margin-top: 1rem; }
+
 .detail-section {
   border-top: 1px solid rgba(127,166,178,0.18);
   padding-top: 0.7rem;

@@ -1,0 +1,15 @@
+id: voice_pipeline
+name: Voice Pipeline
+version: 0.1.0
+type: voice
+description: Coordinator foundation for wake word, VAD, STT, brain, and TTS plugins.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - voice.listen
+  - voice.speak
+api:
+  prefix: /api/plugins/voice_pipeline

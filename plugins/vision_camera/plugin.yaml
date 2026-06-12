@@ -1,0 +1,19 @@
+id: vision_camera
+name: Vision Camera
+version: 0.1.0
+type: vision
+description: USB/Pi camera preview and capture foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - vision.camera
+dependencies:
+  python:
+    - package: opencv-python
+      module: cv2
+      optional: true
+api:
+  prefix: /api/plugins/vision_camera

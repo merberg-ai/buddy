@@ -1,0 +1,19 @@
+id: vision_yolo
+name: YOLO Vision
+version: 0.1.0
+type: vision
+description: YOLO object detection/tracking foundation.
+author: BuddyCore Team
+entrypoint: main.py
+enabled_by_default: false
+permissions:
+  - api
+  - events
+  - vision.read
+dependencies:
+  python:
+    - package: ultralytics
+      module: ultralytics
+      optional: true
+api:
+  prefix: /api/plugins/vision_yolo

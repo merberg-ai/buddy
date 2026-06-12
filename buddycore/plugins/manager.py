@@ -24,13 +24,23 @@ from buddycore.plugins.permissions import permission_risk
 
 
 class PluginManager:
-    def __init__(self, plugin_dir: Path, config_dir: Path, data_dir: Path, db: BuddyDatabase, event_bus: EventBus, console: ConsoleHub):
+    def __init__(
+        self,
+        plugin_dir: Path,
+        config_dir: Path,
+        data_dir: Path,
+        db: BuddyDatabase,
+        event_bus: EventBus,
+        console: ConsoleHub,
+        settings: dict[str, Any] | None = None,
+    ):
         self.plugin_dir = plugin_dir
         self.config_dir = config_dir
         self.data_dir = data_dir
         self.db = db
         self.event_bus = event_bus
         self.console = console
+        self.settings = settings or {}
         self.router = APIRouter(prefix="/api/plugins")
         self.app: FastAPI | None = None
         self.plugins: dict[str, Any] = {}
@@ -72,7 +82,7 @@ class PluginManager:
         rows = self.db.get_plugin_rows()
         for row in rows:
             plugin_id = row["id"]
-            if safe_mode and plugin_id not in {"dashboard_terminal", "log_viewer", "system_monitor"}:
+            if safe_mode and plugin_id not in {"dashboard_terminal", "log_viewer", "system_monitor", "config_manager"}:
                 self.logger.warning("Safe mode: skipping plugin %s", plugin_id)
                 continue
             if row.get("enabled"):
@@ -131,6 +141,18 @@ class PluginManager:
         if not row:
             self.logger.warning("Cannot load unknown plugin %s", plugin_id)
             return False
+        blocked_permissions = self._blocked_required_permissions(plugin_id)
+        if blocked_permissions:
+            message = f"Required permissions revoked: {', '.join(blocked_permissions)}"
+            self.db.set_plugin_status(plugin_id, "permission_denied", message)
+            await self.console.publish({
+                "kind": "error",
+                "level": "ERROR",
+                "source": "plugin_manager",
+                "plugin_id": plugin_id,
+                "message": message,
+            })
+            return False
         plugin_path = Path(row["path"])
         manifest = self.manifests.get(plugin_id) or self._load_manifest(plugin_path / "plugin.yaml")
         entrypoint = plugin_path / manifest["entrypoint"]
@@ -172,6 +194,7 @@ class PluginManager:
             tb = traceback.format_exc()
             self.logger.error("Failed to load plugin %s: %s", plugin_id, exc)
             self.db.record_plugin_error(plugin_id, "load", type(exc).__name__, str(exc), tb)
+            self._auto_disable_if_repeated_failures(plugin_id)
             await self.console.publish({
                 "kind": "error",
                 "level": "ERROR",
@@ -314,6 +337,23 @@ class PluginManager:
             "pillow": "PIL",
         }
         return aliases.get(package.lower(), package)
+
+    def _blocked_required_permissions(self, plugin_id: str) -> list[str]:
+        blocked = []
+        for permission in self.db.get_plugin_permissions(plugin_id):
+            if bool(permission.get("required")) and not bool(permission.get("granted")):
+                blocked.append(str(permission.get("permission")))
+        return blocked
+
+    def _auto_disable_if_repeated_failures(self, plugin_id: str) -> None:
+        if not bool(self.settings.get("auto_disable_repeated_failures", True)):
+            return
+        max_errors = int(self.settings.get("max_errors", 5))
+        errors = self.db.get_plugin_errors(plugin_id=plugin_id, limit=max_errors)
+        if len(errors) >= max_errors:
+            self.db.set_plugin_enabled(plugin_id, False)
+            self.db.set_plugin_status(plugin_id, "auto_disabled", f"Auto-disabled after {len(errors)} recent errors")
+            self.logger.error("Auto-disabled plugin %s after repeated failures", plugin_id)
 
     async def install_from_zip(self, zip_path: Path) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="buddy_plugin_zip_") as tmp:
