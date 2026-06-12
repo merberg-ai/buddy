@@ -3,9 +3,12 @@ from __future__ import annotations
 import asyncio
 from collections import deque
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from fastapi import WebSocket
+if TYPE_CHECKING:
+    from fastapi import WebSocket
+else:
+    WebSocket = Any
 
 
 class ConsoleHub:

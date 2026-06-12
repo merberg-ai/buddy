@@ -149,11 +149,21 @@ class BuddyDatabase:
                 (now_iso(), level, source, plugin_id, event_type, message, payload_json),
             )
 
-    def recent_events(self, limit: int = 100) -> list[dict[str, Any]]:
+    def recent_events(self, limit: int = 100, plugin_id: str | None = None) -> list[dict[str, Any]]:
         with self.connect() as conn:
-            rows = conn.execute(
-                "SELECT * FROM event_log ORDER BY id DESC LIMIT ?", (limit,)
-            ).fetchall()
+            if plugin_id:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM event_log
+                    WHERE plugin_id=? OR source=?
+                    ORDER BY id DESC LIMIT ?
+                    """,
+                    (plugin_id, plugin_id, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM event_log ORDER BY id DESC LIMIT ?", (limit,)
+                ).fetchall()
         return [dict(row) for row in reversed(rows)]
 
     def upsert_plugin(self, manifest: dict[str, Any], path: str, default_enabled: bool) -> None:
@@ -199,13 +209,43 @@ class BuddyDatabase:
                     ),
                 )
             for perm in manifest.get("permissions", []) or []:
+                if isinstance(perm, dict):
+                    permission = str(perm.get("name", ""))
+                    required = 1 if bool(perm.get("required", True)) else 0
+                else:
+                    permission = str(perm)
+                    required = 1
+                if not permission:
+                    continue
                 conn.execute(
                     """
                     INSERT OR IGNORE INTO plugin_permissions (plugin_id, permission, granted, required, updated_at)
                     VALUES (?, ?, ?, ?, ?)
                     """,
-                    (plugin_id, perm, 1, 1, now),
+                    (plugin_id, permission, 1, required, now),
                 )
+
+    def get_plugin_permissions(self, plugin_id: str) -> list[dict[str, Any]]:
+        with self.connect() as conn:
+            rows = conn.execute(
+                "SELECT * FROM plugin_permissions WHERE plugin_id=? ORDER BY permission COLLATE NOCASE",
+                (plugin_id,),
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    def set_plugin_permission(self, plugin_id: str, permission: str, granted: bool) -> bool:
+        with self.connect() as conn:
+            row = conn.execute(
+                "SELECT plugin_id, permission FROM plugin_permissions WHERE plugin_id=? AND permission=?",
+                (plugin_id, permission),
+            ).fetchone()
+            if not row:
+                return False
+            conn.execute(
+                "UPDATE plugin_permissions SET granted=?, updated_at=? WHERE plugin_id=? AND permission=?",
+                (1 if granted else 0, now_iso(), plugin_id, permission),
+            )
+            return True
 
     def set_plugin_status(self, plugin_id: str, status: str, error: str | None = None) -> None:
         with self.connect() as conn:

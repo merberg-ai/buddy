@@ -24,14 +24,14 @@ HIGH_RISK = {
     "filesystem.write",
 }
 
-DANGER_GOBLIN = {
+DANGER_RISK = {
     "shell",
     "motion.calibrate",
 }
 
 
 def permission_risk(permission: str) -> str:
-    if permission in DANGER_GOBLIN:
+    if permission in DANGER_RISK:
         return "danger"
     if permission in HIGH_RISK:
         return "high"

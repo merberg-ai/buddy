@@ -31,6 +31,7 @@
       <div class="button-row">
         <button id="rescanBtn">🔍 Rescan</button>
         <button id="refreshBtn">🔄 Refresh</button>
+        <button id="debugBundleBtn">🧰 Debug Bundle</button>
       </div>
       <form id="githubInstallForm" class="install-form">
         <label>Install from GitHub</label>
@@ -51,6 +52,13 @@
     <section class="card plugins-card">
       <div class="card-title">Installed Plugins</div>
       <div id="plugins" class="plugins-list"></div>
+    </section>
+
+    <section class="card plugin-detail-card">
+      <div class="card-title">Plugin Detail</div>
+      <div id="pluginDetail" class="plugin-detail">
+        <div class="subtle">Select a plugin to inspect permissions, dependencies, errors, and event history.</div>
+      </div>
     </section>
 
     <section class="card console-card">

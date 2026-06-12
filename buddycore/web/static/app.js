@@ -1,9 +1,20 @@
 const state = {
   paused: false,
   levelFilter: "",
+  selectedPlugin: "",
 };
 
 const el = (id) => document.getElementById(id);
+
+function h(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (ch) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    "\"": "&quot;",
+    "'": "&#39;",
+  }[ch]));
+}
 
 function fmtTime(ts) {
   if (!ts) return "--:--:--";
@@ -68,6 +79,7 @@ async function loadPlugins() {
       <div class="plugin-actions">
         ${p.enabled ? `<button class="danger" data-action="disable" data-id="${p.id}">Disable</button>` : `<button class="good" data-action="enable" data-id="${p.id}">Enable</button>`}
         <button data-action="reload" data-id="${p.id}">Reload</button>
+        <button data-action="details" data-id="${p.id}">Details</button>
         <button data-action="errors" data-id="${p.id}">Errors</button>
       </div>
     `;
@@ -76,6 +88,10 @@ async function loadPlugins() {
 }
 
 async function pluginAction(action, id) {
+  if (action === 'details') {
+    await showPluginDetail(id);
+    return;
+  }
   if (action === 'errors') {
     const data = await fetchJson(`/api/plugins/${id}/errors`);
     addConsoleLine({level: 'INFO', source: 'webui', message: `${id} errors: ${JSON.stringify(data.errors.slice(0, 3))}`});
@@ -85,6 +101,78 @@ async function pluginAction(action, id) {
   addConsoleLine({level: data.ok ? 'INFO' : 'ERROR', source: 'webui', message: `${action} ${id}: ${JSON.stringify(data)}`});
   await loadPlugins();
   await loadStatus();
+  if (state.selectedPlugin === id) await showPluginDetail(id);
+}
+
+function renderDependency(dep) {
+  const status = dep.installed ? 'installed' : (dep.optional ? 'optional missing' : 'missing');
+  const cls = dep.installed ? 'risk-low' : (dep.optional ? 'risk-medium' : 'risk-high');
+  return `
+    <div class="detail-row">
+      <span><code>${h(dep.package || dep.module || 'unknown')}</code> <span class="${cls}">${h(status)}</span></span>
+      <span>${h(dep.module || '')}</span>
+    </div>
+  `;
+}
+
+function renderPermission(perm, pluginId) {
+  const risk = perm.risk || 'unknown';
+  const checked = perm.granted ? 'checked' : '';
+  return `
+    <div class="detail-row">
+      <span><code>${h(perm.permission)}</code> <span class="risk-${h(risk)}">${h(risk)}</span></span>
+      <label class="permission-toggle">
+        <span>${perm.granted ? 'granted' : 'revoked'}</span>
+        <input type="checkbox" data-permission="${h(perm.permission)}" data-plugin-id="${h(pluginId)}" ${checked} />
+      </label>
+    </div>
+  `;
+}
+
+function renderTimeline(items, emptyText) {
+  if (!items || items.length === 0) return `<div class="subtle">${h(emptyText)}</div>`;
+  return `<pre class="timeline">${items.map((item) => {
+    const source = item.plugin_id || item.source || item.phase || 'plugin';
+    const type = item.event_type || item.error_type || item.level || '';
+    const message = item.message || item.error_message || '';
+    return `[${fmtTime(item.timestamp)}] [${source}] ${type} ${message}`;
+  }).map(h).join('\n')}</pre>`;
+}
+
+async function showPluginDetail(id) {
+  state.selectedPlugin = id;
+  const data = await fetchJson(`/api/plugins/${id}`);
+  const plugin = data.plugin || {};
+  const permissions = data.permissions || [];
+  const dependencies = data.dependencies || [];
+  const configText = JSON.stringify(data.config || {}, null, 2);
+  el('pluginDetail').innerHTML = `
+    <div>
+      <div class="plugin-name">${h(plugin.name || plugin.id)}</div>
+      <div class="plugin-meta">${h(plugin.id)} · ${h(plugin.type || 'utility')} · v${h(plugin.version)} · ${h(plugin.status || 'installed')}</div>
+      <div class="subtle">${h(plugin.description || '')}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-heading">Permissions</div>
+      <div class="detail-list">${permissions.length ? permissions.map((perm) => renderPermission(perm, id)).join('') : '<div class="subtle">No permissions declared.</div>'}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-heading">Dependencies</div>
+      <div class="detail-list">${dependencies.length ? dependencies.map(renderDependency).join('') : '<div class="subtle">No Python dependencies declared.</div>'}</div>
+    </div>
+    <div class="detail-section">
+      <div class="detail-heading">Config</div>
+      <pre class="timeline">${h(configText)}</pre>
+    </div>
+    <div class="detail-section">
+      <div class="detail-heading">Recent Events</div>
+      ${renderTimeline(data.events, 'No recent events for this plugin.')}
+    </div>
+    <div class="detail-section">
+      <div class="detail-heading">Recent Errors</div>
+      ${renderTimeline(data.errors, 'No recent errors for this plugin.')}
+    </div>
+  `;
 }
 
 function connectConsole() {
@@ -112,6 +200,11 @@ async function init() {
     addConsoleLine({level: 'INFO', source: 'webui', message: `Rescan complete: ${JSON.stringify(data.discovered)}`});
     await loadPlugins();
   });
+  el('debugBundleBtn').addEventListener('click', async () => {
+    const data = await fetchJson('/api/debug-bundle', {method: 'POST'});
+    addConsoleLine({level: data.ok ? 'INFO' : 'ERROR', source: 'webui', message: `Debug bundle: ${JSON.stringify(data)}`});
+    if (data.ok && data.download_url) window.open(data.download_url, '_blank');
+  });
   el('pauseConsole').addEventListener('click', () => {
     state.paused = !state.paused;
     el('pauseConsole').textContent = state.paused ? '▶ Resume' : '⏸ Pause';
@@ -122,6 +215,17 @@ async function init() {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
     await pluginAction(btn.dataset.action, btn.dataset.id);
+  });
+  el('pluginDetail').addEventListener('change', async (e) => {
+    const input = e.target.closest('input[data-permission]');
+    if (!input) return;
+    const data = await fetchJson(`/api/plugins/${input.dataset.pluginId}/permissions`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({permission: input.dataset.permission, granted: input.checked})
+    });
+    addConsoleLine({level: data.ok ? 'INFO' : 'ERROR', source: 'webui', message: `Permission update: ${JSON.stringify(data)}`});
+    await showPluginDetail(input.dataset.pluginId);
   });
   el('githubInstallForm').addEventListener('submit', async (e) => {
     e.preventDefault();

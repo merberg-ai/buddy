@@ -4,6 +4,7 @@ import asyncio
 import importlib.util
 import inspect
 import logging
+import re
 import shutil
 import subprocess
 import tempfile
@@ -19,6 +20,7 @@ from buddycore.database import BuddyDatabase, now_iso
 from buddycore.events import EventBus
 from buddycore.console import ConsoleHub
 from buddycore.plugins.context import PluginContext
+from buddycore.plugins.permissions import permission_risk
 
 
 class PluginManager:
@@ -185,14 +187,8 @@ class PluginManager:
         return {"ok": ok, "plugin_id": plugin_id}
 
     async def disable_plugin(self, plugin_id: str) -> dict[str, Any]:
-        plugin = self.plugins.get(plugin_id)
-        if plugin:
-            try:
-                await self._maybe_call(plugin_id, plugin, "on_disable")
-            except Exception:
-                pass
+        await self.unload_plugin(plugin_id, call_disable=True, status="disabled")
         self.db.set_plugin_enabled(plugin_id, False)
-        self.db.set_plugin_status(plugin_id, "disabled")
         await self.console.publish({
             "kind": "plugin",
             "level": "WARN",
@@ -202,13 +198,34 @@ class PluginManager:
         })
         return {"ok": True, "plugin_id": plugin_id}
 
-    async def reload_plugin(self, plugin_id: str) -> dict[str, Any]:
-        await self.disable_plugin(plugin_id)
+    async def unload_plugin(self, plugin_id: str, call_disable: bool = False, status: str = "stopped") -> bool:
+        plugin = self.plugins.get(plugin_id)
+        if plugin:
+            if call_disable:
+                try:
+                    await self._maybe_call(plugin_id, plugin, "on_disable")
+                except Exception:
+                    pass
+            try:
+                await self._maybe_call(plugin_id, plugin, "on_unload")
+            except Exception:
+                pass
+        removed = self.event_bus.unsubscribe_plugin(plugin_id)
         self.plugins.pop(plugin_id, None)
         self.contexts.pop(plugin_id, None)
+        self.db.set_plugin_status(plugin_id, status)
+        self.logger.info("Plugin unloaded: %s (%s subscriptions removed)", plugin_id, removed)
+        return bool(plugin)
+
+    async def reload_plugin(self, plugin_id: str) -> dict[str, Any]:
+        await self.unload_plugin(plugin_id, call_disable=True, status="reloading")
         self.db.set_plugin_enabled(plugin_id, True)
         ok = await self.load_plugin(plugin_id)
         return {"ok": ok, "plugin_id": plugin_id, "note": "Routes are not fully removed in v0.1 reload; restart service for a clean router."}
+
+    async def shutdown(self) -> None:
+        for plugin_id in list(self.plugins):
+            await self.unload_plugin(plugin_id, call_disable=False, status="stopped")
 
     def list_plugins(self) -> list[dict[str, Any]]:
         rows = self.db.get_plugin_rows()
@@ -220,6 +237,83 @@ class PluginManager:
 
     def get_plugin_errors(self, plugin_id: str | None = None) -> list[dict[str, Any]]:
         return self.db.get_plugin_errors(plugin_id=plugin_id, limit=100)
+
+    def get_plugin_events(self, plugin_id: str, limit: int = 100) -> list[dict[str, Any]]:
+        return self.db.recent_events(limit=limit, plugin_id=plugin_id)
+
+    def get_plugin_permissions(self, plugin_id: str) -> list[dict[str, Any]]:
+        permissions = self.db.get_plugin_permissions(plugin_id)
+        for permission in permissions:
+            permission["risk"] = permission_risk(str(permission.get("permission", "")))
+            permission["granted"] = bool(permission.get("granted"))
+            permission["required"] = bool(permission.get("required"))
+        return permissions
+
+    def set_plugin_permission(self, plugin_id: str, permission: str, granted: bool) -> bool:
+        return self.db.set_plugin_permission(plugin_id, permission, granted)
+
+    def get_plugin_detail(self, plugin_id: str) -> dict[str, Any] | None:
+        row = self.db.get_plugin_row(plugin_id)
+        if not row:
+            return None
+        plugin_path = Path(row["path"])
+        manifest = self.manifests.get(plugin_id)
+        if manifest is None and (plugin_path / "plugin.yaml").exists():
+            manifest = self._load_manifest(plugin_path / "plugin.yaml")
+        manifest = manifest or {}
+        return {
+            "plugin": {**row, "loaded": plugin_id in self.plugins},
+            "manifest": manifest,
+            "config": self._load_plugin_config(plugin_id, plugin_path),
+            "permissions": self.get_plugin_permissions(plugin_id),
+            "dependencies": self.detect_dependencies(manifest),
+            "errors": self.get_plugin_errors(plugin_id)[:20],
+            "events": self.get_plugin_events(plugin_id, limit=50),
+        }
+
+    def detect_dependencies(self, manifest: dict[str, Any]) -> list[dict[str, Any]]:
+        dependencies = self._manifest_python_dependencies(manifest)
+        return [self._dependency_status(item) for item in dependencies]
+
+    def _manifest_python_dependencies(self, manifest: dict[str, Any]) -> list[Any]:
+        deps = manifest.get("python_dependencies") or manifest.get("requirements") or []
+        nested = manifest.get("dependencies", {})
+        if isinstance(nested, dict):
+            deps = nested.get("python", deps)
+        if isinstance(deps, (str, dict)):
+            return [deps]
+        if isinstance(deps, list):
+            return deps
+        return []
+
+    def _dependency_status(self, item: Any) -> dict[str, Any]:
+        if isinstance(item, dict):
+            package = str(item.get("package") or item.get("name") or item.get("requirement") or "")
+            module = str(item.get("module") or "") or self._infer_module_name(package)
+            optional = bool(item.get("optional", False))
+        else:
+            package = str(item)
+            module = self._infer_module_name(package)
+            optional = False
+        installed = bool(module and importlib.util.find_spec(module))
+        return {
+            "package": package,
+            "module": module,
+            "optional": optional,
+            "installed": installed,
+            "install_command": f"pip install {package}" if package else "",
+        }
+
+    def _infer_module_name(self, requirement: str) -> str:
+        package = re.split(r"[<>=!~;\\[]", requirement, maxsplit=1)[0].strip()
+        package = package.replace("-", "_")
+        aliases = {
+            "pyyaml": "yaml",
+            "python_multipart": "multipart",
+            "opencv_python": "cv2",
+            "pillow": "PIL",
+        }
+        return aliases.get(package.lower(), package)
 
     async def install_from_zip(self, zip_path: Path) -> dict[str, Any]:
         with tempfile.TemporaryDirectory(prefix="buddy_plugin_zip_") as tmp:

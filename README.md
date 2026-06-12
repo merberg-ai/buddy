@@ -18,13 +18,18 @@ This repository is the **initial GitHub-ready framework**: repo layout, install 
 - Plugin discovery from `plugins/`
 - Plugin enable/disable/reload/rescan
 - Plugin status and error isolation
+- Plugin detail API and WebUI panel
+- Permission review/update API and WebUI controls
+- Per-plugin event/error timeline foundation
+- Plugin Python dependency detection from manifests
 - Plugin API endpoint registration
 - Install plugins from ZIP
 - Install plugins from GitHub repo
+- Debug bundle export with redacted config, logs, events, and plugin state
 - Default bundled plugin stubs
 - Verbose colorized install scripts
 - Run as a normal app or install as a systemd service
-- Safe-mode flag support planned into the layout
+- Safe-mode flag support via `config/safe_mode.flag`
 
 ---
 
@@ -90,6 +95,14 @@ To uninstall the service:
 ```bash
 ./scripts/service-uninstall.sh
 ```
+
+To update an installed service from git:
+
+```bash
+./scripts/update_git.sh
+```
+
+The updater stops `buddycore`, pulls the configured upstream with `git pull --ff-only`, refreshes Python dependencies when `.venv` exists, runs a compile sanity check, and starts the service again. It refuses to run over tracked local changes.
 
 ---
 
@@ -250,6 +263,22 @@ The WebUI dashboard streams logs live over:
 ```
 
 The goal is ruthless observability: plugin loads, plugin failures, API errors, event chains, and system state changes should be visible without SSH spelunking.
+
+## Debug bundles
+
+Create a support bundle from the WebUI with **Debug Bundle**, or from the Pi shell:
+
+```bash
+./scripts/export-debug-bundle.sh
+```
+
+Bundles are written to:
+
+```text
+data/debug_bundles/
+```
+
+They include recent logs, recent events, plugin errors, plugin status, project metadata, and redacted configuration.
 
 ---
 

@@ -16,6 +16,7 @@ from . import __version__
 from .config import ROOT_DIR, load_config, path_from_config
 from .console import ConsoleHub
 from .database import BuddyDatabase
+from .debug_bundle import create_debug_bundle
 from .events import EventBus
 from .logging_setup import setup_logging
 from .plugins.manager import PluginManager
@@ -25,6 +26,11 @@ class GitHubInstallRequest(BaseModel):
     repo_url: str
     branch: str = "main"
     subdir: str = ""
+
+
+class PermissionUpdateRequest(BaseModel):
+    permission: str
+    granted: bool
 
 
 def create_app() -> FastAPI:
@@ -85,6 +91,7 @@ def create_app() -> FastAPI:
     async def shutdown() -> None:
         logger.warning("BuddyCore shutting down")
         await event_bus.emit("system.shutdown", {}, source="core")
+        await plugin_manager.shutdown()
 
     @app.get("/")
     async def index():
@@ -127,9 +134,68 @@ def create_app() -> FastAPI:
     async def recent_events(limit: int = 100):
         return {"ok": True, "events": db.recent_events(limit=limit)}
 
+    @app.post("/api/debug-bundle")
+    async def debug_bundle():
+        bundle_path = create_debug_bundle(
+            output_dir=data_dir / "debug_bundles",
+            root_dir=ROOT_DIR,
+            log_dir=log_dir,
+            config=config,
+            db=db,
+            console=console,
+            plugins=plugin_manager.list_plugins(),
+        )
+        logger.info("Debug bundle created: %s", bundle_path)
+        return {
+            "ok": True,
+            "path": str(bundle_path),
+            "download_url": f"/api/debug-bundle/{bundle_path.name}",
+        }
+
+    @app.get("/api/debug-bundle/{filename}")
+    async def download_debug_bundle(filename: str):
+        bundle_dir = (data_dir / "debug_bundles").resolve()
+        bundle_path = (bundle_dir / filename).resolve()
+        try:
+            bundle_path.relative_to(bundle_dir)
+        except ValueError:
+            raise HTTPException(status_code=404, detail="Debug bundle not found")
+        if bundle_path.suffix != ".zip" or not bundle_path.exists():
+            raise HTTPException(status_code=404, detail="Debug bundle not found")
+        return FileResponse(bundle_path, filename=bundle_path.name, media_type="application/zip")
+
     @app.get("/api/plugins")
     async def list_plugins():
         return {"ok": True, "plugins": plugin_manager.list_plugins()}
+
+    @app.get("/api/plugins/{plugin_id}")
+    async def plugin_detail(plugin_id: str):
+        detail = plugin_manager.get_plugin_detail(plugin_id)
+        if detail is None:
+            raise HTTPException(status_code=404, detail="Plugin not found")
+        return {"ok": True, **detail}
+
+    @app.get("/api/plugins/{plugin_id}/events")
+    async def plugin_events(plugin_id: str, limit: int = 100):
+        if not plugin_manager.db.get_plugin_row(plugin_id):
+            raise HTTPException(status_code=404, detail="Plugin not found")
+        return {"ok": True, "events": plugin_manager.get_plugin_events(plugin_id, limit=limit)}
+
+    @app.post("/api/plugins/{plugin_id}/permissions")
+    async def update_plugin_permission(plugin_id: str, payload: PermissionUpdateRequest):
+        if not plugin_manager.db.get_plugin_row(plugin_id):
+            raise HTTPException(status_code=404, detail="Plugin not found")
+        ok = plugin_manager.set_plugin_permission(plugin_id, payload.permission, payload.granted)
+        if not ok:
+            raise HTTPException(status_code=404, detail="Plugin permission not found")
+        await console.publish({
+            "kind": "plugin",
+            "level": "WARN",
+            "source": "plugin_manager",
+            "plugin_id": plugin_id,
+            "message": f"Permission {payload.permission} set to {'granted' if payload.granted else 'revoked'}",
+        })
+        return {"ok": True, "permissions": plugin_manager.get_plugin_permissions(plugin_id)}
 
     @app.post("/api/plugins/rescan")
     async def rescan_plugins():

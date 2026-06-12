@@ -102,7 +102,8 @@ h1 {
 .hero-card { grid-column: span 8; }
 .card:not(.hero-card):not(.plugins-card):not(.console-card) { grid-column: span 4; }
 .plugins-card { grid-column: span 5; }
-.console-card { grid-column: span 7; min-height: 520px; }
+.plugin-detail-card { grid-column: span 7; }
+.console-card { grid-column: span 12; min-height: 520px; }
 
 .card-title {
   color: var(--cyan);
@@ -192,6 +193,67 @@ input { width: 100%; }
 .plugin-actions { margin-top: 0.6rem; display: flex; gap: 0.4rem; flex-wrap: wrap; }
 .plugin-actions button { padding: 0.45rem 0.55rem; font-size: 0.8rem; }
 
+.plugin-detail {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.detail-section {
+  border-top: 1px solid rgba(127,166,178,0.18);
+  padding-top: 0.7rem;
+}
+
+.detail-heading {
+  color: var(--text);
+  font-weight: 800;
+  margin-bottom: 0.45rem;
+}
+
+.detail-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.75rem;
+  align-items: center;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.detail-row code {
+  color: var(--cyan);
+  overflow-wrap: anywhere;
+}
+
+.risk-low { color: var(--green); }
+.risk-medium { color: var(--amber); }
+.risk-high, .risk-danger { color: var(--red); }
+.risk-unknown { color: var(--muted); }
+
+.timeline {
+  margin: 0;
+  max-height: 180px;
+  overflow: auto;
+  white-space: pre-wrap;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.permission-toggle {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.permission-toggle input {
+  width: auto;
+}
+
 .console-header {
   display: flex;
   align-items: flex-start;
@@ -222,7 +284,7 @@ input { width: 100%; }
 @media (max-width: 900px) {
   .topbar { align-items: flex-start; flex-direction: column; }
   .grid { grid-template-columns: 1fr; }
-  .hero-card, .plugins-card, .console-card, .card:not(.hero-card):not(.plugins-card):not(.console-card) { grid-column: span 1; }
+  .hero-card, .plugins-card, .plugin-detail-card, .console-card, .card:not(.hero-card):not(.plugins-card):not(.plugin-detail-card):not(.console-card) { grid-column: span 1; }
   .metric-row { grid-template-columns: 1fr; }
   .console-header { flex-direction: column; }
   #console { height: 360px; font-size: 0.78rem; }

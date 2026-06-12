@@ -23,6 +23,20 @@ class EventBus:
         self._subscribers[event_type].append((plugin_id, handler))
         self.logger.debug("Subscribed %s to %s", plugin_id, event_type)
 
+    def unsubscribe_plugin(self, plugin_id: str) -> int:
+        removed = 0
+        for event_type in list(self._subscribers):
+            before = len(self._subscribers[event_type])
+            self._subscribers[event_type] = [
+                item for item in self._subscribers[event_type] if item[0] != plugin_id
+            ]
+            removed += before - len(self._subscribers[event_type])
+            if not self._subscribers[event_type]:
+                del self._subscribers[event_type]
+        if removed:
+            self.logger.debug("Unsubscribed %s handlers for plugin %s", removed, plugin_id)
+        return removed
+
     async def emit(self, event_type: str, payload: dict[str, Any] | None = None, source: str = "core") -> None:
         payload = payload or {}
         message = f"Event emitted: {event_type}"
